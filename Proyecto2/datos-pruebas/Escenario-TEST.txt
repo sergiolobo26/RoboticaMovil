@@ -1,0 +1,17 @@
+Tamano: 8500, 3900
+q0: 600, 3300, -90
+qf: 5100, 300, -90
+qL0: 5100, 300, 0
+qLm: 8250, 300, 0
+qLf: 8250, 3000, 90
+Obstaculos: 4
+Obstaculo1_Pto1: 0, 0
+Obstaculo1_Pto2: 4200, 900
+Obstaculo2_Pto1: 5700, 600
+Obstaculo2_Pto2: 8000, 3900
+Obstaculo3_Pto1: 0, 900
+Obstaculo3_Pto2: 600, 2100
+Obstaculo4_Pto1: 5100, 2700
+Obstaculo4_Pto2: 5700, 3900
+Obstaculo5_Pto1: 2000, 2500
+Obstaculo5_Pto2: 4200, 1200

@@ -154,7 +154,7 @@ def create_map(width, hight, obs_points):
 def main():
     
 
-    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = read_obstacle_from_file('datos-pruebas/Escenario-Planificacion1.txt')
+    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = read_obstacle_from_file('datos-pruebas/Escenario-TEST.txt')
     
     #width, hight = width + 1, hight + 1
     ox, oy = create_map(width, hight, obs_points)
