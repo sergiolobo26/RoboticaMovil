@@ -4,7 +4,8 @@ Created on Fri Oct 26 11:45:57 2018
 
 @author: Sergio
 """
-
+#TODO corregir posiciones fraccionarias, pues no esta llegando a la posicion de 8250 posiblemente porque se convierte en 82.5 -> 82.0 
+import argparse
 try:
     import numpy as np
     import matplotlib.pyplot as plt
@@ -100,8 +101,8 @@ def read_obstacle_from_file(file_adress):
         for i in range(len(line)):
             line[i] = line[i].strip(",")
             line[i] = line[i].strip('\n')
-            line[i] = int(line[i])
-            line[i] = line[i]/100
+            line[i] = float(line[i])
+            line[i] = float(line[i]/100.0)
         lines.append(line)
 
     width, hight = lines[0]
@@ -151,10 +152,12 @@ def create_map(width, hight, obs_points):
     return ox, oy
 
 
-def main():
+def main(file_adress):
     
-
-    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = read_obstacle_from_file('datos-pruebas/Escenario-TEST.txt')
+    #ap = argparse.ArgumentParser()
+    #ap.add_argument("-f", "--ofile", default = 'datos-pruebas/Escenario-Base.txt',  help = "path to the txt map file")
+    #file_adress = vars(ap.parse_args())
+    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = read_obstacle_from_file(file_adress)#'datos-pruebas/Escenario-Base.txt')
     
     #width, hight = width + 1, hight + 1
     ox, oy = create_map(width, hight, obs_points)

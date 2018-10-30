@@ -23,10 +23,12 @@ Con algunas modificaciones para el proyecto de Robotica Movil
 try: 
     import matplotlib.pyplot as plt
     show_animation = True
+    plot_results = True
 
 except:
     print('No se encnto MatplotLib, por lo tanto no se graficaran los resultados')
     show_animation = False
+    plot_results = False
 
 import math
 
@@ -35,8 +37,8 @@ import math
 class Node:
 
     def __init__(self, x, y, cost, pind):
-        self.x = int(x)
-        self.y = int(y)
+        self.x = int(round(x))
+        self.y = int(round(y))
         self.cost = cost
         self.pind = pind
 
@@ -88,7 +90,7 @@ def a_star_planning(sx, sy, gx, gy, ox, oy, reso, rr):
         if show_animation:
             plt.plot(current.x * reso, current.y * reso, "xc")
             if len(closedset.keys()) % 10 == 0:
-                plt.pause(0.001)
+                plt.pause(0.0001)
 
         if current.x == ngoal.x and current.y == ngoal.y:
             print("Find goal")
@@ -187,6 +189,16 @@ def calc_index(node, xwidth, xmin, ymin):
 
 def get_motion_model():
     # dx, dy, cost
+    
+    motion = [[1, 0, 1],
+              [0, 1, 1],
+              [-1, 0, 1],
+              [0, -1, 1],
+              [-1, -1, 1],
+              [-1, 1, 1],
+              [1, -1, 1],
+              [1, 1, 1]]
+    '''
     motion = [[1, 0, 1],
               [0, 1, 1],
               [-1, 0, 1],
@@ -195,6 +207,7 @@ def get_motion_model():
               [-1, 1, math.sqrt(2)],
               [1, -1, math.sqrt(2)],
               [1, 1, math.sqrt(2)]]
+    '''
 
     return motion
 
@@ -202,18 +215,18 @@ def get_motion_model():
 def main():
     print(__file__ + " start!!")
     import create_map_test as cm
-    ox, oy, width, hight, q0, qf = cm.main()
+    ox, oy, width, hight, q0, qf = cm.main('datos-pruebas/Escenario-Base.txt')
     # start and goal position
     
     sx = q0[0]
     sy = q0[1]
     gx = qf[0]
     gy = qf[1]
-    grid_size = 1  # [m]
-    robot_size = 2  # [m]
+    grid_size = 1 # [m]
+    robot_size = 2.5 # [m]
     
     
-    if show_animation:
+    if plot_results:
         plt.plot(ox, oy, ".k")
         plt.plot(sx, sy, "xr")
         plt.plot(gx, gy, "xb")
@@ -223,8 +236,9 @@ def main():
 
     rx, ry = a_star_planning(sx, sy, gx, gy, ox, oy, grid_size, robot_size)
     
-    if show_animation:
+    if plot_results:
         plt.plot(rx, ry, "-r")
+        plt.savefig('path.png', dpi=100)
         plt.show()
     
     path_coordinates = open('path_coordinates.txt', 'w')
