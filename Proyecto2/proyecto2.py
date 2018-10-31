@@ -205,9 +205,9 @@ def main():
     print initConfig
     processData( initConfig )
 
-    tDelay = 15
+    tDelay = 20
     robot.enableMotors()
-    robot.setTransAccel( 25 )
+    robot.setTransAccel( 30 )
     
     print('Dirigiendose al punto de localizacion Qf')
     for i, config in enumerate(rC) :
@@ -244,18 +244,18 @@ def main():
             ArUtil_sleep( tDelay )
             #processData( initConfig )
     
-        ArUtil_sleep( 10 )
+        ArUtil_sleep( 100 )
 
     _, final_C = robotConfigs( [[qf[0]*100, qf[1]*100, qf[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
     robot.stop()
-    ArUtil_sleep( 100 )
+    ArUtil_sleep( 1000 )
     robot.setHeading(final_C[0][2])
     
-    ArUtil_sleep( 100 )
+    ArUtil_sleep( 1000 )
     while not robot.isHeadingDone( 0.0 ): 
         ArUtil_sleep( 10 )
       
-    ArUtil_sleep( 50 )
+    ArUtil_sleep( 1000 )
         
     print''
     print "... ... Localizando ... ..."
@@ -284,10 +284,69 @@ def main():
     #append_map_coordinates()
     print "\tNew Odometry Pose: ",  robot.getPose()
 
+    #stallRecover = ArActionStallRecover()
+    #avoidSide = ArActionAvoidSide("avoid_side", 300, 5)
+    #avoid_front = ArActionAvoidFront()
+    #limit_forward = ArActionLimiterForwards("limitFron", 300, 1000, 15)
+    #constantVel = ArActionConstantVelocity('ConstVel', 20)
+    
+    #robot.addAction(stallRecover, 100)
+    #robot.addAction(avoidSide, 98)
+    #robot.addAction(avoid_front, 95)
+    #robot.addAction(limit_forward, 90)
+    #robot.addAction(constantVel, 80)
+    robot.setTransAccel( 10 )
+
+    _, final_C2 = robotConfigs( [[qLm[0]*100, qLm[1]*100, qLm[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
+    
+    nextPose = ArPose( final_C2[0][0], final_C2[0][1])
+    nTh = robot.findAngleTo( nextPose )
+        #print "\t\tAngle to {} deg".format( nTh )    
+    robot.setHeading( nTh )
+    ArUtil_sleep( 4000 )
+    nD = robot.findDistanceTo( nextPose )
+        #print "\t\tDistance to {} mm".format( nD )
+    robot.move( nD )
+    while not robot.isMoveDone( 0.0 ) : 
+            ArUtil_sleep( 50 )
+    ArUtil_sleep( 3000 )
+    
+    _, final_C2 = robotConfigs( [[qLm[0]*100, qLm[1]*100, qLm[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
+    
+    nextPose = ArPose( final_C2[0][0], final_C2[0][1])
+    nTh = robot.findAngleTo( nextPose )
+        #print "\t\tAngle to {} deg".format( nTh )    
+    robot.setHeading( nTh )
+    ArUtil_sleep( 5000 )
+    nD = robot.findDistanceTo( nextPose )
+        #print "\t\tDistance to {} mm".format( nD )
+    robot.move( nD )
+    while not robot.isMoveDone( 0.0 ) : 
+            ArUtil_sleep( 50 )
+    ArUtil_sleep( 1000 )    
+    print "\n New Odometry Pose: ",  robot.getPose()
+
+    _, final_C3 = robotConfigs( [[qLf[0]*100, qLf[1]*100, qLf[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
+    print "\n Moving to G-config: {}".format( [qLf[0]*100, qLf[1]*100, qLf[2]*100] )
+    print "Moving to R-config: {}".format(final_C3[0])
+    nextPose = ArPose( final_C3[0][0], final_C3[0][1])
+    nTh = robot.findAngleTo( nextPose )
+        #print "\t\tAngle to {} deg".format( nTh )    
+    robot.setHeading( nTh )
+    ArUtil_sleep( 3000 )
+    nD = robot.findDistanceTo( nextPose )
+        #print "\t\tDistance to {} mm".format( nD )
+    robot.move( nD )
+    while not robot.isMoveDone( 0.0 ) : 
+            ArUtil_sleep( tDelay )
+    ArUtil_sleep( 1000 )
+    
+    print "\n New Odometry Pose: ",  robot.getPose()
+
     print "Exiting."
 
-
-
+    
+    
 
     Aria_shutdown()
 

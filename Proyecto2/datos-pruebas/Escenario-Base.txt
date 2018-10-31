@@ -9,3 +9,5 @@ Obstaculo1_Pto1: 0, 0
 Obstaculo1_Pto2: 4200, 900
 Obstaculo2_Pto1: 5700, 600
 Obstaculo2_Pto2: 8000, 3900
+Obstaculo3_Pto1: 1800, 2100
+Obstaculo3_Pto2: 2100, 2400
