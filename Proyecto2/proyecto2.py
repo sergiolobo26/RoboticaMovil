@@ -55,7 +55,6 @@ PATH_COORDINATES = 'path_coordinates.txt'
 # FUNCTIONS
 ## PROCESS LASER READINGS
 def processData( C ) :
-
     fileMap = open( "./MapasGenerados/DataMap.map", "a" )
     if laser:
         laser.lockDevice()
@@ -72,7 +71,6 @@ def processData( C ) :
             
         laser.unlockDevice()
     fileMap.close()
-
 
 def append_map_coordinates():
     '''
@@ -115,8 +113,6 @@ def append_map_coordinates():
 
 ## CHANGE CONFIGURATIONS TO ROBOT FRAMEWORK
 def robotConfigs( configs, initConfig ) :
-
-    
     x0 = initConfig[0]
     y0 = initConfig[1]
     th0 = math.radians( initConfig[2] )
@@ -140,7 +136,6 @@ def robotConfigs( configs, initConfig ) :
     
     initConfig[2] = th0
     return initConfig, rConfigs
-
 
 def read_distance_angle(startAngle, endAngle):
     
@@ -168,10 +163,39 @@ def read_distance_angle(startAngle, endAngle):
             r_angle = ang[i+1]
     return r_angle, prom_d
         
+def getOrientation( startAngle, endAngle ) :
+    dTh = 2.0
+    th = startAngle
 
+    #XY = []
+    N = 0
+    SX = 0
+    SY = 0
+    SXY = 0
+    SX2 = 0
+    while th < endAngle :
+        d = laser.currentReadingPolar( th - dTh/2.0, th + dTh/2.0 )
+        
+        rad = math.radians( th )
+        #XYTemp = [ d*math.cos( rad ), d*math.sin( rad ) ]
+        #XY.append( XYTemp )
+
+        xTemp = d*math.cos( rad )
+        yTemp = d*math.sin( rad )
+
+        N += 1
+        SX += xTemp
+        SY += yTemp
+        SXY += (xTemp*yTemp)
+        SX2 += (xTemp*xTemp)
+
+        th += dTh
+
+    M = ( N*SXY - SX*SY )/( N*SX2 - SX*SX )
+    return M, math.atan( M )
+    #return XY
 
 # Lista de Configuraciones
-
 def read_configurations():
     path_coordinates = open(PATH_COORDINATES, 'r')
 
@@ -187,76 +211,8 @@ def read_configurations():
     configurations.reverse()
     path_coordinates.close()
     return configurations
-    
-# MAIN
-    
-def main():
-    
-    print "Running..."
-    robot.runAsync(True)
-    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = c_map.read_obstacle_from_file(OBSTACLE_FILE_PATH)
-    C = read_configurations()
-  
-    nC = len( C )
-    print "Total Configurations: {}".format( nC )
 
-    print "Transforming into Robot Framework..."
-    initConfig, rC = robotConfigs( C, [q0[0]*100, q0[1]*100, q0[2]*100])
-    print initConfig
-    processData( initConfig )
-
-    tDelay = 20
-    robot.enableMotors()
-    robot.setTransAccel( 30 )
-    
-    print('Dirigiendose al punto de localizacion Qf')
-    for i, config in enumerate(rC) :
-        nextPose = ArPose( config[0], config[1])
-    
-        print "\tMoving to G-config: {}".format(C[i])
-        print "\tMoving to R-config: {}".format( nextPose )
-    
-    
-        nTh = robot.findAngleTo( nextPose )
-        #print "\t\tAngle to {} deg".format( nTh )    
-        robot.setHeading( nTh )
-    
-        while not robot.isHeadingDone( 0.0 ) : 
-            ArUtil_sleep( tDelay )
-            #processData( initConfig )
-    
-        ArUtil_sleep( 10 )
-
-        nD = robot.findDistanceTo( nextPose )
-        #print "\t\tDistance to {} mm".format( nD )
-        robot.move( nD )
-    
-        while not robot.isMoveDone( 0.0 ) : 
-            ArUtil_sleep( tDelay )
-            #processData( initConfig )
-    
-        ArUtil_sleep( 10 )
-    
-        #print "\t\tSetting angle to {} deg".format( config[2] )
-        #robot.setHeading( config[2] )
-    
-        while not robot.isHeadingDone( 0.0 ): 
-            ArUtil_sleep( tDelay )
-            #processData( initConfig )
-    
-        ArUtil_sleep( 100 )
-
-    _, final_C = robotConfigs( [[qf[0]*100, qf[1]*100, qf[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
-    robot.stop()
-    ArUtil_sleep( 1000 )
-    robot.setHeading(final_C[0][2])
-    
-    ArUtil_sleep( 1000 )
-    while not robot.isHeadingDone( 0.0 ): 
-        ArUtil_sleep( 10 )
-      
-    ArUtil_sleep( 1000 )
-        
+'''
     print''
     print "... ... Localizando ... ..."
     print''
@@ -275,6 +231,7 @@ def main():
     print(" ")
     
     print "\n Odometry Pose: ",  robot.getPose()
+
     print"Corrigiendo locailizacion ..."
     
     _, newC = robotConfigs( [[4200 + d1, d2, 0]], [q0[0]*100, q0[1]*100, q0[2]*100])
@@ -284,17 +241,6 @@ def main():
     #append_map_coordinates()
     print "\tNew Odometry Pose: ",  robot.getPose()
 
-    #stallRecover = ArActionStallRecover()
-    #avoidSide = ArActionAvoidSide("avoid_side", 300, 5)
-    #avoid_front = ArActionAvoidFront()
-    #limit_forward = ArActionLimiterForwards("limitFron", 300, 1000, 15)
-    #constantVel = ArActionConstantVelocity('ConstVel', 20)
-    
-    #robot.addAction(stallRecover, 100)
-    #robot.addAction(avoidSide, 98)
-    #robot.addAction(avoid_front, 95)
-    #robot.addAction(limit_forward, 90)
-    #robot.addAction(constantVel, 80)
     robot.setTransAccel( 10 )
 
     _, final_C2 = robotConfigs( [[qLm[0]*100, qLm[1]*100, qLm[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
@@ -340,14 +286,159 @@ def main():
     while not robot.isMoveDone( 0.0 ) : 
             ArUtil_sleep( tDelay )
     ArUtil_sleep( 1000 )
+
     
     print "\n New Odometry Pose: ",  robot.getPose()
+'''
+# Corrige el angulo del frente
+def correctFrontAngle() :
+    print "CORRECTING FRONT ANGLE..."
+    M, T = getOrientation( -20, 20 )
+    eTh = math.degrees( math.copysign( 0.5*math.pi - math.fabs( T ), T ) )
+    print "\tSlope: {:.2f} \t| Orientation: {:.2f} rad \t| Error: {:.2f} deg".format( M, T, eTh )
+    
+    robot.setRotVel( math.copysign( 5, -eTh ) )
+    while math.fabs( eTh ) > 2.0 :
+        M, T = getOrientation( -20, 20 )
+        eTh = math.degrees( math.copysign( 0.5*math.pi - math.fabs( T ), T ) )
+        robot.setRotVel( math.copysign( 1, -eTh ) )
+        print "\tSlope: {:.2f} \t| Orientation: {:.2f} rad \t| Error: {:.2f} deg".format( M, T, eTh )
+    
+    print " "
+    robot.stop()
+
+# Se mueve hacia adelante hasta que la distancia sensada en el frente sea igual a distance
+def moveForward( distance ) :
+    print "MOVING FORWARD...."
+    dx = laser.currentReadingPolar( -1.0, 1.0 )
+    print "\tDistancia en X", dx
+    print "\tDistancia Esperada en X: {:.2f}".format( distance )
+    ex = dx - distance
+    print "\tError en X: ", ex
+
+    robot.setVel( 25 )
+    while ex > 1:
+        dx = laser.currentReadingPolar( -1.0, 1.0 )
+        ex = dx - distance
+        print "\tError en X: ", ex
+    robot.stop( )
+
+# Corrige el angulo utilizando las medidas del lado derecho
+def correctSideAngle( ) :
+    print "CORRECTING SIDE ANGLE...."
+    M, T = getOrientation( -110, -70 )
+    eTh = math.degrees( -T )
+    print "\tSlope: {:.2f} \t| Orientation: {:.2f} rad \t| Error: {:.2f} deg".format( M, T, eTh )
+    
+    robot.setRotVel( math.copysign( 5, -eTh ) )
+    while math.fabs( eTh ) > 2.0 :
+        M, T = getOrientation( -110, -70 )
+        eTh = math.degrees( -T )
+        robot.setRotVel( math.copysign( 1, -eTh ) )
+        print "\tSlope: {:.2f} \t| Orientation: {:.2f} rad \t| Error: {:.2f} deg".format( M, T, eTh )
+    
+    print " "
+    robot.stop()
+
+# Se mueve hacia adelante hasta que la distancia sensada en el frente sea igual a distance
+# mientras que corrige la orientación
+def moveForwardCorrect( distance ) :
+    print "MOVING FORWARD + CORRECTING ANGLE...."
+    dx = laser.currentReadingPolar( -1.0, 1.0 )
+    print "\tDistancia en X", distance
+    ex = dx - distance
+    print "\tError en X: ", ex
+
+    robot.setVel( 50 )
+    while ex > 2:
+        dx = laser.currentReadingPolar( -1.0, 1.0 )
+        ex = dx - distance
+        
+        M, T = getOrientation( -110, -70 )
+        eTh = math.degrees( -T )
+        rotVel = math.copysign( 1, -eTh )
+        robot.setRotVel( rotVel )
+
+        print "\tError en X: {:.2f} \t| Error en Th: {:.2f} \t| RotVel : {:.2f}".format( ex, eTh, rotVel ) 
+    
+    robot.stop( )
+
+# MAIN
+def main( ):
+    print "Running..."
+    robot.runAsync(True)
+    width, hight, q0, qf, qL0, qLm, qLf, n_obstacles, obs_points = c_map.read_obstacle_from_file(OBSTACLE_FILE_PATH)
+    C = read_configurations()
+  
+    nC = len( C )
+    print "Total Configurations: {}".format( nC )
+
+    print "Transforming into Robot Framework..."
+    initConfig, rC = robotConfigs( C, [q0[0]*100, q0[1]*100, q0[2]*100])
+    print initConfig
+
+    tDelay = 10
+    robot.enableMotors()
+    robot.setTransAccel( 30 )
+    
+    print('Dirigiendose al punto de localizacion Qf')
+    for i, config in enumerate(rC) :
+        nextPose = ArPose( config[0], config[1])
+    
+        print "\tMoving to G-config: {}".format(C[i])
+        print "\tMoving to R-config: {}".format( nextPose )
+    
+    
+        nTh = robot.findAngleTo( nextPose )
+        #print "\t\tAngle to {} deg".format( nTh )    
+        robot.setHeading( nTh )
+        while not robot.isHeadingDone( 0.0 ) : 
+            ArUtil_sleep( tDelay )    
+        ArUtil_sleep( 10 )
+
+        nD = robot.findDistanceTo( nextPose )
+        #print "\t\tDistance to {} mm".format( nD )
+        robot.move( nD )    
+        while not robot.isMoveDone( 0.0 ) : 
+            ArUtil_sleep( tDelay )
+    
+        ArUtil_sleep( 100 )
+
+    robot.stop()
+    
+    print "Moving to qf config: {} x100".format( qf )
+    _, final_C = robotConfigs( [[qf[0]*100, qf[1]*100, qf[2]*100]], [q0[0]*100, q0[1]*100, q0[2]*100])
+
+    ArUtil_sleep( 10 )
+    robot.setHeading( final_C[0][2] )
+    while not robot.isHeadingDone( 0.0 ): 
+        ArUtil_sleep( 10 )
+
+    correctFrontAngle( )
+
+    moveForward( 300 )
+
+    ArUtil_sleep( 10 )
+    robot.setHeading( 90.0 )
+    while not robot.isHeadingDone( 0.0 ): 
+        ArUtil_sleep( 10 )
+    robot.stop( )
+
+    correctSideAngle( )
+
+    moveForwardCorrect( 250 )
+
+    ArUtil_sleep( 10 )
+    robot.setHeading( 180.0 )
+    while not robot.isHeadingDone( 0.0 ): 
+        ArUtil_sleep( 10 )
+    robot.stop( )
+
+    correctSideAngle( )
+
+    moveForwardCorrect( 250 )
 
     print "Exiting."
-
-    
-    
-
     Aria_shutdown()
 
     fileRobot.close( )

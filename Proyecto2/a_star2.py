@@ -213,9 +213,10 @@ def get_motion_model():
 
 
 def main():
+    MAP_FILE = 'datos-pruebas/Escenario-Planificacion1.txt'
     print(__file__ + " start!!")
     import create_map_test as cm
-    ox, oy, width, hight, q0, qf = cm.main('datos-pruebas/Escenario-Base.txt')
+    ox, oy, width, hight, q0, qf = cm.main(MAP_FILE)
     # start and goal position
     
     sx = q0[0]
