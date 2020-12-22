@@ -58,7 +58,6 @@ O, de forma equivalente,
 	
 	python proyecto2.py -rh <IP-Robot> -cl -lp <IP-Robot> -libd 1.0 -lpt tcp -lt urg 
 
-IP-Robot: 157.253.173.241
 
 Si, por el contrario, solamente desea simular un robot ejecute MobileSim y cargue la escena que desea simular. Luego ejecute en su consola, 
 	
